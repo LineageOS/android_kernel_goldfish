@@ -129,13 +129,13 @@ int ptrace_getfpregs(struct task_struct *child, __u32 __user *data)
 			unsigned int vpflags = dvpe();
 			flags = read_c0_status();
 			__enable_fpu();
-			__asm__ __volatile__("cfc1\t%0,$0" : "=r" (tmp));
+			__asm__ __volatile__(".set push\n.set hardfloat\ncfc1\t%0,$0\n.set pop" : "=r" (tmp));
 			write_c0_status(flags);
 			evpe(vpflags);
 		} else {
 			flags = read_c0_status();
 			__enable_fpu();
-			__asm__ __volatile__("cfc1\t%0,$0" : "=r" (tmp));
+			__asm__ __volatile__(".set push\n.set hardfloat\ncfc1\t%0,$0\n.set pop" : "=r" (tmp));
 			write_c0_status(flags);
 		}
 	} else {
@@ -348,13 +348,13 @@ long arch_ptrace(struct task_struct *child, long request,
 				unsigned int vpflags = dvpe();
 				flags = read_c0_status();
 				__enable_fpu();
-				__asm__ __volatile__("cfc1\t%0,$0": "=r" (tmp));
+				__asm__ __volatile__(".set push\n.set hardfloat\ncfc1\t%0,$0\n.set pop": "=r" (tmp));
 				write_c0_status(flags);
 				evpe(vpflags);
 			} else {
 				flags = read_c0_status();
 				__enable_fpu();
-				__asm__ __volatile__("cfc1\t%0,$0": "=r" (tmp));
+				__asm__ __volatile__(".set push\n.set hardfloat\ncfc1\t%0,$0\n.set pop": "=r" (tmp));
 				write_c0_status(flags);
 			}
 #ifdef CONFIG_MIPS_MT_SMTC
@@ -535,7 +535,7 @@ static inline int audit_arch(void)
 asmlinkage void syscall_trace_enter(struct pt_regs *regs)
 {
 	/* do the secure computing check first */
-	secure_computing(regs->regs[2]);
+	secure_computing_strict(regs->regs[2]);
 
 	if (!(current->ptrace & PT_PTRACED))
 		goto out;
